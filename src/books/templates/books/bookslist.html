@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+{%block content%}
+<!DOCTYPE html>
+<html>
+
+
+
+<head>
+	 <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="Ksiegarnia" content="">
+  <meta name="Dawid Hubicki" content="">
+
+
+	{% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static "style.css" %}">
+
+
+</head>
+<body>
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="{%url 'home' %}">Księgarnia</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button> 
+     <form id="searchForm" action="{%url 'search' %}" method="post">
+    {% csrf_token %}
+    <input id="search" type="text" name="search" >
+     <input type="submit" value="Szukaj">
+  </form>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+       
+        <ul class="navbar-nav ml-auto">
+     {% if user.is_authenticated %}   
+    <li class="nav-item dropdown">
+
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <img src="{% static "profileicon.png" %}" alt="Profile Icon" height="42" width="42">
+
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+         {%  if request.user.is_superuser  %}
+          <a class="dropdown-item" href="{% url 'addbook' %}">Dodaj Książkę</a>
+         {% else %}
+          <span class="dropdown-item-text">Saldo: {{request.user.customer.money}}</span>
+           {% endif %}
+          <a class="dropdown-item" href="{% url 'orders' %}">Zamówienia Użytkownika</a>
+          <a class="dropdown-item" href="{% url 'logout' %}">Wyloguj</a>
+        </div>
+        <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle " href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <img src="{% static "carticon.png" %}" alt="Cart Icon" height="42" width="42">
+          ({{cartnumber}})
+        </a>
+        <div class="dropdown-menu " aria-labelledby="navbarDropdownMenuLink">
+          {% for cartitem in cart %}
+            
+          <div class="dropdown-item" href="{% url 'book' cartitem.book_id %}"><a href="{% url 'book' cartitem.book_id %}" class="text-dark"> <img  src="{{ cartitem.image.url }}" width="20" height="20" alt=""> {{cartitem.title}} {{cartitem.price}} </a> <a href="{% url 'add_to_cart' cartitem.book_id %}">X</a></div>
+
+            {% endfor %}
+             <h6 class="dropdown-header">Łączna cena:{{totalprice}}</h6>
+             <a href="{% url 'summary' %}" class="btn btn-warning podsumowanie  ">Podsumowanie</a>
+        </div>
+       
+      </li>
+      {%else%}
+      <p> <a href="{% url 'register' %}" class="btn btn-primary ">Rejestracja</a>|<a href="{% url 'login' %}" class="btn btn-primary">Login</a></p>
+      {% endif %}
+
+        </ul>
+      
+
+    
+      </div>
+     
+    </div>
+  </nav>
+  <!-- Page Content -->
+  <div class="container booklist">
+    {% for message in messages %}
+     <div class="alert alert-success" role="alert">
+{{ message }}
+</div> 
+    {% endfor %}
+    <div class="row">
+
+      <div class="col-lg-3">
+
+     
+        <div class="list-group">
+         <a href="{% url 'category' 11 %}" class="list-group-item">Fantasy</a>
+		<a href="{% url 'category' 12 %}" class="list-group-item">Literatura Historyczna</a>
+		<a href="{% url 'category' 13 %}" class="list-group-item">Biografie</a>
+		<a href="{% url 'category' 14 %}" class="list-group-item">Horror</a>
+		<a href="{% url 'category' 15 %}" class="list-group-item">Romans</a>
+		<a href="{% url 'category' 16 %}" class="list-group-item">Dramat</a>
+		<a href="{% url 'category' 17 %}" class="list-group-item">Poezja</a>
+        </div>
+
+      </div>
+      <!-- /.col-lg-3 -->
+
+      <div class="col-lg-9">
+
+
+        <div class="row">
+        {% for book in books %}	
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+              <a href="{% url 'book' book.book_id %}"><img class="card-img-top" src="{{ book.image.url }}" width="200" height="200" alt=""></a>
+              <div class="card-body">
+                <h4 class="card-title">
+                  <a href="{% url 'book' book.book_id %}">{{book.title}}</a>
+                </h4>
+                <h5>{{book.price}} zł</h5>
+                <p class="card-text">{{book.shortdescription}}</p>
+                
+              </div>
+              <div class="card-footer text-center">
+                <a href="{% url 'add_to_cart' book.book_id %}" class="btn btn-warning">Dodaj do Koszyka</a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+         
+
+          
+        </div>
+        <!-- /.row -->
+         <div class="pagination">
+    <span class="step-links">
+      <table class="table table-bordered">
+  <thead>
+    <tr>
+       {% if books.has_previous %}
+      <th scope="col">
+      
+            <a href="?page=1">&laquo; Pierwsza</a>
+            <a href="?page={{ books.previous_page_number }}">Poprzednia</a>
+        </th>
+        {% endif %}
+      <th scope="col">
+            Strona {{ books.number }} z {{ books.paginator.num_pages }}.
+     </th>
+     {% if books.has_next %}
+      <th scope="col"> 
+            <a href="?page={{ books.next_page_number }}">Następna</a>
+            <a href="?page={{ books.paginator.num_pages }}">Ostatnia &raquo;</a>
+       </th>
+        {% endif %}
+    </tr>
+  </thead>
+       </table>
+
+    </span>
+</div>
+
+      </div>
+      <!-- /.col-lg-9 -->
+     
+  </div>
+
+
+    </div>
+    <!-- /.row -->
+
+  </div>
+  <!-- /.container -->
+    <!-- Footer -->
+  <footer class="py-5 bg-dark">
+    <div class="container">
+      <p class="m-0 text-center text-white">Dawid Hubicki 2020</p>
+    </div>
+    <!-- /.container -->
+  </footer>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+
+	
+		
+{%endblock content%}
+</body>
+</html>

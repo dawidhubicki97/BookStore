@@ -1,0 +1,40 @@
+{% load crispy_forms_tags%}
+<!DOCTYPE html>
+<html>
+
+
+<head>
+	{% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static "style.css" %}">
+	<link rel="stylesheet" type="text/css" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+	<script src="{% static "bootstrap/js/bootstrap.min.js" %}"></script>
+	<script src="jquery-3.3.1.min.js"></script>
+  
+</head>
+<body class="loginregister">
+	<div class="container">
+
+  
+<div class="login-form">
+    <form method="post">
+    	  {% csrf_token %}
+        <h2 class="text-center">Logowanie</h2>       
+        <div class="form-group">
+            {{login_form.username|as_crispy_field}}
+        </div>
+        <div class="form-group">
+           {{login_form.password|as_crispy_field}}
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-block">Zaloguj</button>
+        </div>
+       <p class="text-center"><a href="{% url 'register' %}">Zarejestruj się</a></p>
+         {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+    </form>
+   
+</div>
+  
+</body>
+</html>
